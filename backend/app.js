@@ -6,6 +6,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override"
 import ejsMate from "ejs-mate";
+import wrapAsync from "./utils/wrapAsync.js";
+import ExpressError from "./utils/ExpressError.js";
+import { listingSchema } from "./schema.js";
 // Create __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,11 +33,19 @@ app.get("/", (req,res)=>{
     res.send("Hi! I am root");
 })
 
+const validateListing = (req,res,next) => {
+    let result = listingSchema.validate(req.body);
+    if (result.error) {
+        let errMsg = result.error.details.map((el) => el.message).join(",")
+        throw new ExpressError(400, errMsg)
+    }
+    next()
+}
 // Index Route
-app.get("/listings", async (req,res)=>{
+app.get("/listings", wrapAsync(async (req,res)=>{
     const allListings = await Listing.find({});
     res.render("index.ejs", {allListings});
-})
+}))
 
 // new Route
 app.get("/listings/new", (req,res)=>{
@@ -42,7 +53,7 @@ app.get("/listings/new", (req,res)=>{
 })
 
 // create route
-app.post("/listings", async (req,res)=>{
+app.post("/listings", validateListing, wrapAsync( async (req,res,next)=>{
     let obj = req.body.listing;
     let url = obj.image;
     obj.image = {
@@ -52,21 +63,22 @@ app.post("/listings", async (req,res)=>{
     const newListing = new Listing(obj);
     await newListing.save();
     res.redirect("/listings");
-})
+}))
 // show Route
-app.get("/listings/:id", async (req, res)=> {
+app.get("/listings/:id", wrapAsync(async (req, res,next)=> {
     let id = req.params.id;
     const listing = await Listing.findById(id);
     res.render("show.ejs", {listing});
-})
-app.get("/listings/:id/edit", async (req,res)=>{
+}))
+app.get("/listings/:id/edit", wrapAsync(async (req,res,next)=>{
     let id = req.params.id;
     const listing = await Listing.findById(id);
     res.render("edit.ejs", {listing});
-})
-app.put("/listings/:id", async (req,res)=>{
+}))
+app.put("/listings/:id", validateListing, wrapAsync(async (req,res,next)=>{
     let id = req.params.id;
     let obj = req.body.listing;
+    // if (!obj) throw new ExpressError(400, "Send valid data for listing")
     let url = obj.image;
     obj.image = {
         filename:"filename",
@@ -74,13 +86,23 @@ app.put("/listings/:id", async (req,res)=>{
     }
     await Listing.findByIdAndUpdate(id, obj);
     res.redirect(`/listings/${id}`);
-})
-app.delete("/listings/:id", async (req,res)=>{
+}))
+app.delete("/listings/:id", wrapAsync (async (req,res)=>{
     let id = req.params.id;
     await Listing .findByIdAndDelete(id);
     res.redirect("/listings");
+}))
+
+// middlewares
+app.all("*", (req,res,next)=>{
+    next(new ExpressError(404,"Page Not Found!"));
 })
 
+app.use((err,req,res,next)=>{
+    let {statusCode=500, message="Something went wrong"} = err;
+    // res.status(statusCode).send(message);
+    res.render("error.ejs", {statusCode,message,err})
+})
 app.listen(3000, ()=>{
     console.log("server listening to port 3000")
 })
