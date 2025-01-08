@@ -83,3 +83,35 @@ body {
     background-color:  #fe424d;
     border: none;
 }
+
+.review-card {
+    background-color: #222222;
+    color: white;
+    /* opacity: 0.5; */
+    border-radius: 1.5rem;
+    margin-top: 1rem;
+    width: 33%;
+}
+/* .review-card:hover {
+    opacity: 0.8;
+} */
+.review-card-title {
+    font-size: medium;
+    margin: 1rem;
+}
+.review-card-text {
+    margin: 1rem;
+}
+.review-container {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.review-card-body form button {
+    font-size: small;
+    border-radius: 1.5rem;
+    height: 2rem !important;
+    width: 10rem !important;
+    margin: 1rem;
+}

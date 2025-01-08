@@ -9,6 +9,7 @@ import ejsMate from "ejs-mate";
 import wrapAsync from "./utils/wrapAsync.js";
 import ExpressError from "./utils/ExpressError.js";
 import { listingSchema } from "./schema.js";
+import { Review } from "./models/review.model.js";
 // Create __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,7 +68,7 @@ app.post("/listings", validateListing, wrapAsync( async (req,res,next)=>{
 // show Route
 app.get("/listings/:id", wrapAsync(async (req, res,next)=> {
     let id = req.params.id;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate('reviews');
     res.render("show.ejs", {listing});
 }))
 app.get("/listings/:id/edit", wrapAsync(async (req,res,next)=>{
@@ -87,12 +88,27 @@ app.put("/listings/:id", validateListing, wrapAsync(async (req,res,next)=>{
     await Listing.findByIdAndUpdate(id, obj);
     res.redirect(`/listings/${id}`);
 }))
+app.post("/listings/:id/reviews", async (req,res)=> {
+    let id = req.params.id;
+    let review = new Review(req.body.review);
+    let listing = await Listing.findById(id);
+    listing.reviews.push(review)
+    await review.save()
+    await listing.save()
+    res.redirect(`/listings/${id}`)
+})
 app.delete("/listings/:id", wrapAsync (async (req,res)=>{
     let id = req.params.id;
     await Listing .findByIdAndDelete(id);
     res.redirect("/listings");
 }))
-
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync (async (req,res)=>{
+    let id = req.params.id;
+    let reviewId = req.params.reviewId;
+    await Review.findByIdAndDelete(reviewId);
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    res.redirect(`/listings/${id}`)
+}))
 // middlewares
 app.all("*", (req,res,next)=>{
     next(new ExpressError(404,"Page Not Found!"));
