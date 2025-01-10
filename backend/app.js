@@ -8,6 +8,8 @@ import ejsMate from "ejs-mate";
 import ExpressError from "./utils/ExpressError.js";
 import listings from "./Routes/listing.js"
 import reviews from "./Routes/review.js"
+import session from "express-session";
+import flash from "connect-flash";
 
 // Create __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +25,25 @@ app.use(methodOverride("_method"));
 app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname, "public")))
 
+const sessionOptions = {
+    secret : "mysupersecretcode",
+    resave : false,
+    saveUninitialized : true,
+    cookie : {
+        expires : Date.now() + 7 * 24 * 60 * 60 * 1000,
+        maxAge : 7 * 24 * 60 * 60 * 1000,
+        httpOnly : true, // for cross-scripting attacks
+    }
+}
+
+app.get("/", (req,res)=>{
+    res.send("Hi! I am root");
+})
+
+
+app.use(session(sessionOptions));
+app.use(flash());
+
 main()
     .then(()=>{
         console.log("connected to DB");
@@ -31,10 +52,11 @@ main()
         console.log(err);
     })
 
-app.get("/", (req,res)=>{
-    res.send("Hi! I am root");
+app.use((req,res,next)=>{
+    res.locals.success = req.flash("success");
+    res.locals.failure = req.flash("failure");
+    next();
 })
-
 app.use("/listings", listings);
 app.use("/listings/:id/reviews", reviews);
 
