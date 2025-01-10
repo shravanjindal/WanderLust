@@ -3,7 +3,7 @@ import wrapAsync from "../utils/wrapAsync.js";
 import { Listing } from "../models/listing.model.js";
 import { listingSchema } from "../schema.js";
 import ExpressError from "../utils/ExpressError.js";
-
+import { isLoggedIn } from "../middleware.js";
 const router = express.Router();
 
 const validateListing = (req,res,next) => {
@@ -18,16 +18,16 @@ const validateListing = (req,res,next) => {
 // Index Route
 router.get("/", wrapAsync(async (req,res)=>{
     const allListings = await Listing.find({});
-    res.render("index.ejs", {allListings});
+    res.render("listings/index.ejs", {allListings});
 }))
 
 // new Route
-router.get("/new", (req,res)=>{
-    res.render("new.ejs")
+router.get("/new", isLoggedIn, (req,res)=>{
+    res.render("listings/new.ejs")
 })
 
 // create route
-router.post("/", validateListing, wrapAsync( async (req,res,next)=>{
+router.post("/", isLoggedIn,validateListing, wrapAsync( async (req,res,next)=>{
     let obj = req.body.listing;
     let url = obj.image;
     obj.image = {
@@ -44,21 +44,21 @@ router.get("/:id", wrapAsync(async (req, res,next)=> {
     let id = req.params.id;
     const listing = await Listing.findById(id).populate('reviews');
     if (!listing) {
-        req.flash("failure", "Listing doesn't exist");
+        req.flash("error", "Listing doesn't exist");
         res.redirect("/listings");
     }
-    res.render("show.ejs", {listing});
+    res.render("listings/show.ejs", {listing});
 }))
-router.get("/:id/edit", wrapAsync(async (req,res,next)=>{
+router.get("/:id/edit", isLoggedIn, wrapAsync(async (req,res,next)=>{
     let id = req.params.id;
     const listing = await Listing.findById(id);
     if (!listing) {
-        req.flash("failure", "Listing doesn't exist");
+        req.flash("error", "Listing doesn't exist");
         res.redirect("/listings");
     }
-    res.render("edit.ejs", {listing});
+    res.render("listings/edit.ejs", {listing});
 }))
-router.put("/:id", validateListing, wrapAsync(async (req,res,next)=>{
+router.put("/:id", isLoggedIn,validateListing, wrapAsync(async (req,res,next)=>{
     let id = req.params.id;
     let obj = req.body.listing;
     // if (!obj) throw new ExpressError(400, "Send valid data for listing")
@@ -72,7 +72,7 @@ router.put("/:id", validateListing, wrapAsync(async (req,res,next)=>{
     res.redirect(`/listings/${id}`);
 }))
 
-router.delete("/:id", wrapAsync (async (req,res)=>{
+router.delete("/:id",isLoggedIn, wrapAsync (async (req,res)=>{
     let id = req.params.id;
     await Listing .findByIdAndDelete(id);
     req.flash("success", "Listing Deleted!")

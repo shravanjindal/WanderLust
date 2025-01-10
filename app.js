@@ -6,11 +6,16 @@ import { fileURLToPath } from "url";
 import methodOverride from "method-override"
 import ejsMate from "ejs-mate";
 import ExpressError from "./utils/ExpressError.js";
-import listings from "./Routes/listing.js"
-import reviews from "./Routes/review.js"
+
 import session from "express-session";
 import flash from "connect-flash";
+import passport from "passport";
+import LocalStrategy from "passport-local";
+import { User } from "./models/user.model.js";
 
+import listingRouter from "./routes/listing.js"
+import reviewRouter from "./routes/review.js"
+import userRouter from "./routes/user.js"
 // Create __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,12 +42,21 @@ const sessionOptions = {
 }
 
 app.get("/", (req,res)=>{
-    res.send("Hi! I am root");
+    res.redirect("/signup");
+    // res.send("Hi! I am root");
 })
 
 
 app.use(session(sessionOptions));
 app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+// use static authenticate method of model in LocalStrategy
+passport.use(new LocalStrategy(User.authenticate()));
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 main()
     .then(()=>{
@@ -54,11 +68,14 @@ main()
 
 app.use((req,res,next)=>{
     res.locals.success = req.flash("success");
-    res.locals.failure = req.flash("failure");
+    res.locals.failure = req.flash("error");
+    res.locals.currUser = req.user;
     next();
 })
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
+
+app.use("/", userRouter);
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
 
 // middlewares
 app.all("*", (req,res,next)=>{
