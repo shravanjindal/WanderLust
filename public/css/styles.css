@@ -87,26 +87,35 @@ body {
 .review-card {
     background-color: #222222;
     color: white;
-    /* opacity: 0.5; */
     border-radius: 1.5rem;
-    margin-top: 1rem;
-    width: 33%;
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
 }
-/* .review-card:hover {
-    opacity: 0.8;
-} */
+.review-container {
+    display: grid;
+    gap: 0.25rem; /* Spacing between cards */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .review-container {
+        grid-template-columns: repeat(2, 1fr); /* Two cards per row */
+    }
+}
+
+@media (min-width: 1024px) {
+    .review-container {
+        grid-template-columns: repeat(3, 1fr); /* Three cards per row for larger screens */
+    }
+}
+
 .review-card-title {
     font-size: medium;
     margin: 1rem;
 }
 .review-card-text {
     margin: 1rem;
-}
-.review-container {
-    display: flex;
-    margin-bottom: 1rem;
-    justify-content: space-between;
-    flex-wrap: wrap;
 }
 .review-card-body form button {
     font-size: small;
@@ -115,3 +124,32 @@ body {
     width: 10rem !important;
     margin: 1rem;
 }
+.review-card-comment {
+    max-height: 10rem;
+    overflow-y: auto;
+}
+
+.review-card-comment::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.review-card-comment::-webkit-scrollbar-thumb {
+    background-color: white;
+    border-radius: 4px;
+}
+
+.review-card-comment::-webkit-scrollbar-track {
+    background-color: #222;
+    border-radius: 4px;
+}
+
+/* Hide scrollbar if content height is less than 10rem */
+.review-card-comment:has(:only-child) {
+    overflow-y: hidden;
+}
+
+.review-card-comment:has(:not(:only-child)) {
+    overflow-y: auto;
+}
+

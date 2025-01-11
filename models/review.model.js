@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Listing } from "./listing.model.js";
 const reviewSchema = new mongoose.Schema({
     comment : String,
     rating : {
@@ -10,6 +9,10 @@ const reviewSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now()
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 })
 
