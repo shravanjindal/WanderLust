@@ -1,4 +1,6 @@
-import express, { urlencoded } from "express";
+import dotenv from 'dotenv';
+dotenv.config();
+import express from "express";
 const app = express();
 import mongoose from "mongoose";
 import path from "path";
@@ -8,6 +10,7 @@ import ejsMate from "ejs-mate";
 import ExpressError from "./utils/ExpressError.js";
 
 import session from "express-session";
+import MongoStore from 'connect-mongo';
 import flash from "connect-flash";
 import passport from "passport";
 import LocalStrategy from "passport-local";
@@ -16,11 +19,12 @@ import { User } from "./models/user.model.js";
 import listingRouter from "./routes/listing.js"
 import reviewRouter from "./routes/review.js"
 import userRouter from "./routes/user.js"
-// Create __dirname in ES module
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const dbURL = process.env.ATLASDB_URL;
 async function main() {
-    await mongoose.connect("mongodb://localhost:27017/wanderlust")
+    await mongoose.connect(dbURL);
 }
 
 app.engine('ejs', ejsMate);
@@ -31,7 +35,19 @@ app.use(methodOverride("_method"));
 app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname, "public")))
 
+const store = MongoStore.create({
+    mongoUrl : dbURL,
+    crypto: {
+        secret: "mysupersecretcode"
+    },
+    touchAfter : 24 * 3600,
+})
+store.on("error", ()=>{
+    console.log("ERROR in MONGO SESSION STORE", err);
+})
+
 const sessionOptions = {
+    store : store,
     secret : "mysupersecretcode",
     resave : false,
     saveUninitialized : true,
