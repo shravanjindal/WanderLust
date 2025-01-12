@@ -26,6 +26,7 @@ async function main() {
 app.engine('ejs', ejsMate);
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"));
+app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 app.use(methodOverride("_method"));
 app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname, "public")))

@@ -5,19 +5,20 @@ import { saveRedirectUrl } from "../middleware.js";
 import userController from "../controllers/users.js"
 const router = express.Router();
 
-// show route
-router.get("/signup", userController.renderSignUp);
+router
+    .route("/signup")
+    .get(userController.renderSignUp)
+    // create route
+    .post(wrapAsync(userController.createUser));
 
-// create route
-router.post("/signup", wrapAsync(userController.createUser));
-
-// show route
-router.get("/login", userController.renderLogin);
-
-// authentication route
-router.post("/login", saveRedirectUrl,passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }), userController.login)
+router
+    .route("/login")
+    .get(userController.renderLogin)
+    // authentication route
+    .post(saveRedirectUrl,passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }), userController.login)
 
 // logout route
-router.get("/logout", userController.logout);
+router
+    .get("/logout", userController.logout);
 
 export default router;

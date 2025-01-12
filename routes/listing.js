@@ -6,26 +6,27 @@ import { validateListing } from "../middleware.js";
 import listingController from "../controllers/listings.js";
 const router = express.Router();
 
-// Index Route
-router.get("/", wrapAsync(listingController.index))
+router
+    .route("/")
+    // Index Route
+    .get(wrapAsync(listingController.index))
+    // create route
+    .post((req,res,next)=>{console.log(req.body.listing), next()},isLoggedIn,validateListing, wrapAsync(listingController.createListing))
 
 // new Route
 router.get("/new", isLoggedIn, listingController.renderNewForm)
 
-// create route
-router.post("/", isLoggedIn,validateListing, wrapAsync(listingController.createListing))
+router
+    .route("/:id")
+    // show Route
+    .get(wrapAsync(listingController.showListing))
+    // Update Route
+    .put(isLoggedIn,isOwner, validateListing, wrapAsync(listingController.updateListing))
+    // delete route
+    .delete(isLoggedIn, isOwner,wrapAsync (listingController.destroyListing))
 
-// show Route
-router.get("/:id", wrapAsync(listingController.showListing))
 
-// editshow route
+// edit show route
 router.get("/:id/edit", isLoggedIn,isOwner, wrapAsync(listingController.renderEditForm))
-
-// Update Route
-router.put("/:id", isLoggedIn,isOwner, validateListing, wrapAsync(listingController.updateListing))
-
-// delete route
-router.delete("/:id",isLoggedIn, isOwner,wrapAsync (listingController.destroyListing))
-
 
 export default router;

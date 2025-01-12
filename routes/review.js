@@ -7,14 +7,15 @@ import { isReviewAuthor } from "../middleware.js";
 import reviewController from "../controllers/reviews.js"
 const router = express.Router({mergeParams : true});
 
-// show routes
-router.get("/", reviewController.showListing);
-router.get("/:reviewId", reviewController.showListing)
-
-// create route
-router.post("/",isLoggedIn, validateReview, wrapAsync(reviewController.createReview))
-
-// delete route
-router.delete("/:reviewId",isLoggedIn,isReviewAuthor, wrapAsync (reviewController.destroyReview))
+router
+    .route("/")
+    .get(reviewController.showListing)
+    // create route
+    .post(isLoggedIn, validateReview, wrapAsync(reviewController.createReview))
+router
+    .route("/:reviewId")
+    .get(reviewController.showListing)
+    // delete route
+    .delete(isLoggedIn,isReviewAuthor, wrapAsync (reviewController.destroyReview))
 
 export default router;
