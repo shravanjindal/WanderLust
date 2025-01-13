@@ -17,3 +17,15 @@
       }, false)
     })
 })()
+let clicked=false;
+document.querySelector('.navbar-toggler').addEventListener('click', function () {
+  const content = document.querySelector('.listing-container');
+  if (!clicked){
+    content.style.marginTop = '11rem';
+    clicked=true;
+  }
+  else {
+    content.style.marginTop = "1rem";
+    clicked=false;
+  }
+});
