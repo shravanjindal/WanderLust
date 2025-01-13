@@ -18,14 +18,22 @@
     })
 })()
 let clicked=false;
-document.querySelector('.navbar-toggler').addEventListener('click', function () {
-  const content = document.querySelector('.listing-container');
-  if (!clicked){
-    content.style.marginTop = '11rem';
-    clicked=true;
-  }
-  else {
-    content.style.marginTop = "1rem";
+// Select the elements
+const navbarToggler = document.querySelector('.navbar-toggler');
+const navbarNav = document.querySelector('#navbarNavAltMarkup');
+const bodyy = document.querySelector(".body-pro");
+// Add event listener for the toggle button
+
+navbarToggler.addEventListener('click', function () {
+  // Check if the navbar is collapsed or expanded
+  if (clicked){
+    // Navbar is expanded, reset margin
+    bodyy.style.marginTop = '1rem';
     clicked=false;
+  } else {
+    // Navbar is collapsed, add margin
+    bodyy.style.marginTop = '11rem';
+    bodyy.style.marginBottom = '1rem';
+    clicked=true;
   }
 });
